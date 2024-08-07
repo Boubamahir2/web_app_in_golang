@@ -8,7 +8,7 @@ image:
   repository: boubamahir/go-web-app
   pullPolicy: IfNotPresent
   # Overrides the image tag whose default is the chart appVersion.
-  tag: "v1.0.0"
+  tag: "10288905611"
 
 ingress:
   enabled: false
