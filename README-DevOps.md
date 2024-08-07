@@ -66,7 +66,7 @@ docker push <your-docker-username>/go-web-app
       spec:
         containers:
         - name: go-web-app
-          image: <docker-user-name>/go-web-app
+          image: <docker-user-name>/go-web-app:latest
         ports:
         - containerPort: 8080
 ```
