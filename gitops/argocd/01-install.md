@@ -23,12 +23,18 @@ kubectl patch svc argocd-server -n argocd -p '{\"spec\": {\"type\": \"LoadBalanc
 ```bash
 kubectl get svc argocd-server -n argocd
 ```
+-access the argo ui on through the  external-ip on your browser
+
+or 
 
 ## Get the external cluster ip
 - access argo ui with cluster ip and nordport
 ```bash
 kubectl get nodes -o wide
 ```
+- then copy the external-ip cluster
+- then copy the nordport from argocd-server
+- access argocd ui on extenal-ip:nordport
 
 ## Login to Argocd ui
 
@@ -36,11 +42,23 @@ kubectl get nodes -o wide
 kubectl get secrets -n argocd
 ```
 ```bash
-kubectl edit secrets argocd-initial-admin-secret -n argoncd
+kubectl edit secrets argocd-initial-admin-secret -n argocd
 ```
 - copy the password 
 - echo <the password which is in base64 > == | base54 --decode
 - copy the decoded password, dont copy with the ' % ' sign
+
+### Note:
+
+ArgoCD uses a self-signed certificate by default, so you might encounter browser warnings. You can choose to accept the certificate or configure a trusted certificate.
+You'll need the admin username and password to log in. The initial admin password is stored in the argocd-initial-admin-secret secret. You can retrieve it using:
+
+```bash
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d
+```
+
+
+
 from ui
 - username = "admin"
 - password = decoded password
@@ -54,6 +72,7 @@ from ui
 source 
 - repository= your github repo and gitlab repo of your code
 - revision = HEAD
+- select the path i.e helm/go-web-app-chart
 Destination
 - cluster URL = https://kubernetes.default.svc  # which mean you are deploying on the same k8s cluster
 - namespace = default

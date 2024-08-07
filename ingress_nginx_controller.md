@@ -163,5 +163,38 @@ modify the ip address that points to local domain from your ingress service with
 3.231.186.46 go-web-app.local
 
 ```
-helm install go-web-app-chart
+helm install go-web-app go-web-app-chart
 ```
+or
+```
+helm upgrade go-web-app ./go-web-app-chart
+
+```
+
+## debug 
+```
+kubectl describe pod <pod-name>
+```
+## uninstall  
+```
+helm uninstall go-web-app go-web-app-chart
+```
+
+### Access: Access your app at http://localhost:8080 in your browser.
+Example:
+```
+kubectl port-forward svc/go-web-app -n default 8080:80
+```
+
+## Verify and Access: ingress
+```
+kubectl get ingress
+```
+- copy ip-address and go to hosts
+```
+sudo nano /etc/hosts
+```
+add this line
+ip-address go-web-app.local
+
+i.e 64.225.92.209 go-web-app.local
