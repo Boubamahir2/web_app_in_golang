@@ -1,12 +1,5 @@
 
-Step-01 
-- create helm folder in the project directory
-- cd helm
-- helm create <your-app-chart>
-- cd your-app-chart
-- cd templates and delete all the files
-- cp ../../../k8s/manifests/* .
-- move to where you have your values.yaml Create the namespace
+
 
 ```
 kubectl create ns ingress-nginx
@@ -30,12 +23,18 @@ hostNetwork: true
 ingressClass: nginx
 
 Step-04 Deploy nginx ingress controller
+- move to helm folder where you have your values.yaml Create the namespace
 
 ```
 helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace -f values.yaml
 
-
 ```
+
+### install your app using helm
+```
+helm install go-web-app-chart
+```
+
 Step-05 Test with sample nodeport application
 
 ```
@@ -47,135 +46,122 @@ kubectl apply -f sample.yml
 ```
 
 ```---
-  apiVersion: apps/v1
-  kind: Deployment
-  metadata:
-    namespace: default
-    name: hello-app-deployment
-    labels:
-      app: hello-app
-  spec:
-    replicas: 2
-    selector:
-      matchLabels:
-        app: hello-app
-    template:
-      metadata:
-        labels:
-          app: hello-app
-      spec:
-        containers:
-        - name: hello-app
-          image: gcr.io/google-samples/hello-app:1.0
-          ports:
-          - containerPort: 8080
+ apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: go-web-app
+  labels:
+    app: go-web-app
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: go-web-app
+  template:
+    metadata:
+      labels:
+        app: go-web-app
+    spec:
+      containers:
+      - name: go-web-app
+        image: boubamahir/go-web-app:{{ .Values.image.tag }}
+        ports:
+        - containerPort: 8080
 ```
 
 ```
 ---
+# Service for the application
 apiVersion: v1
 kind: Service
 metadata:
-  namespace: default
-  name: hello-app-service
+  name: go-web-app
+  labels:
+    app: go-web-app
 spec:
-  type: NodePort
-  selector:
-    app: hello-app
   ports:
-    - protocol: TCP
-      port: 8080
----
+  - port: 80
+    targetPort: 8080
+    protocol: TCP
+  selector:
+    app: go-web-app
+  type: ClusterIP
 ```
 
+
 ```
+---
+# Ingress resource for the application
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  name: go-web-app
   annotations:
-    kubernetes.io/ingress.class: nginx
-  name: hello-app
-  namespace: default
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
+  ingressClassName: nginx
   rules:
-    - host: www.devopsbyexample.io
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: hello-app-service
-                port:
-                  number: 8080
+  - host: go-web-app.local
+    http:
+      paths: 
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: go-web-app
+            port:
+              number: 80
 ```
 
 http://devopsbyexample.io:31239/
 
-Step-06 Test with port 80 application
 
-deploy.yml
+edite hosts file and the ip 
+```
+sudo nano /etc/hosts
+```
+NAME
+AGE
+go-web-app
+14 m
+S.com
+Server:
+Address:
+CLASS
+HOSTS
+ADDRESS
+nginx
+go-web-app. local
+a23993a07c7bd4bfa9677fd6d5b4af9f-7d4b187d8240ca46.elb.us-east-l.amazonaws.com
+80
+labhishekveeramalla@aveerama-mac go-web-app % nslookup a23993a07c7bd4bfa9677d6d5b4af9f-7d4b187d8240ca46.elb.us-east-1. amazonaw
+
+8.8.8.8
+8.8.8.8#53
+Non-authoritative answer:
+Name:
+a23993a07c7bd4bfa9677fd6d5b4af9f-7d4b187d8240ca46.elb.us-east-1.amazonaws.com
+Address: 44.208.113.132
+Name:
+a23993a07c7bd4bfa9677fd6d5b4af9f-7d4b187d8240ca46.elb.us-east-1.amazonaws.com
+Address: 3.231.186.46
+
+
+modify the ip address that points to local domain from your ingress service with the ip address of your cluster
+##
+# Host Database
+# localhost is used to configure the loopback interface
+# when the system is booting. Do not change this entry.
+
+##
+127.0.0.1 localhost
+255.255.255.255 broadcasthost
+::1 localhost
+
+
+192.168.49.2 example.com
+3.231.186.46 go-web-app.local
 
 ```
-kubectl apply -f deploy.yml
-```
-
-```
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: nginx-deployment
-spec:
-  replicas: 3
-  selector:
-    matchLabels:
-      app: nginx
-  template:
-    metadata:
-      labels:
-        app: nginx
-    spec:
-      containers:
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-```
-
-```
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: nginx-service
-spec:
-  selector:
-    app: nginx
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
-  type: ClusterIP
-```
-
-```
----
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: nginx-ingress
-  annotations:
-    kubernetes.io/ingress.class: nginx
-spec:
-  rules:
-    - host: testlk.com  # Replace with your domain
-      http:
-        paths:
-          - path: /
-            pathType: Prefix
-            backend:
-              service:
-                name: nginx-service
-                port:
-                  number: 80
+helm install go-web-app-chart
 ```
