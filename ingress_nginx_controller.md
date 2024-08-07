@@ -1,4 +1,12 @@
-Step-01 Create the namespace
+
+Step-01 
+- create helm folder in the project directory
+- cd helm
+- helm create <your-app-chart>
+- cd your-app-chart
+- cd templates and delete all the files
+- cp ../../../k8s/manifests/* .
+- move to where you have your values.yaml Create the namespace
 
 ```
 kubectl create ns ingress-nginx
@@ -24,9 +32,11 @@ ingressClass: nginx
 Step-04 Deploy nginx ingress controller
 
 ```
-helm install ingress-nginx ingress-nginx/ingress-nginx -f values.yml -n ingress-nginx
-Step-05 Test with sample nodeport application
+helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace -f values.yaml
+
+
 ```
+Step-05 Test with sample nodeport application
 
 ```
 vim sample.yml
